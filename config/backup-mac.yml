@@ -1,0 +1,47 @@
+# ###########################################################################################################
+#        To use home folder/path use tilde ~                                                                #
+#        Add your custom mappings after the first element in mappings below                                 #
+#        A Target/Mapping can recieve files/folders copied from various sources in normal/archive mode      #
+# ###########################################################################################################
+homedir: "/Users/amaindola/"
+mappings:
+  - name: home
+    target_dir: ~/github/tools_settings/mac-setup/home # Target directory to which sources is to be copied
+    allow_override: true   # set to false if you don't want to override existing file in target directory
+    allow_commit: true   # set to false if you don't want to override existing file in target directory
+    sources:
+      - src_dir: "~" # Source directory from where files to be copied either in normal or in archive mode
+        copy_files: # List of files in the source directory to be copied in normal mode
+          - .bash_profile
+          - .bash_aliases
+          - .bashrc
+          - .zshrc
+          - .fzf.zsh
+          - .fzf.bash
+          - .p10k.zsh
+          - .gitconfig
+          - .gitconfig-work
+          - .gitconfig-personal
+          - .ideavimrc
+          - .npmrc
+          - .flyrc
+          - .iterm2_shell_integration.zsh
+          - .m2/settings.xml
+        zip_files: # List of files in the source directory to be copied in archive mode
+          - .docker
+          - .config
+          - .oh-my-zsh
+    # Add your custom mappings below
+  - name: onedrive
+    target_dir: ~/onedrive/amaindola/mac/
+    allow_override: true
+    allow_commit: true   # set to false if you don't want to override existing file in target directory
+    sources:
+      - src_dir: "~"
+        copy_files:
+          - .saml2aws
+          - .npmrc
+          - .work_profile
+        zip_files:
+          - .aws
+          - IdeaProjects
