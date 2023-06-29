@@ -106,7 +106,7 @@ def copy_file_or_dir(src_file_path, file, target_dir, allow_override):
             shutil.copy2(src_file_path, dest_file_path)
             return "Files copied successfully"
     else:
-        return f"File does not exists."
+        return f"File not found."
 
 
 # Function to copy the file or directory to destination
@@ -141,13 +141,17 @@ def git_commit(project_dir):
     import datetime
 
     now = datetime.datetime.now()
+    here = os.getcwd()
     commit_msg = f"backup-otto at {now.strftime('%d-%m-%Y %H:%M:%S')}"
     cmd = f'git commit -am "{commit_msg}"'
     import os
 
+    # goto to the project directory
     os.chdir(project_dir)
     printlog(cmd)
     os.system(cmd)
+    # go back to the original directory
+    os.chdir(here)
 
 
 def start_backup():
@@ -192,7 +196,7 @@ def start_backup():
 
                 # Commit the changes to git
                 t0 = perf_counter()
-                # git_commit()
+                git_commit(target_dir)
                 t1 = perf_counter()
 
                 # round the time to 2 decimal places

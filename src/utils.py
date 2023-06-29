@@ -1,5 +1,5 @@
 import os
-import sys
+
 
 import yaml
 from pathlib import Path
@@ -8,7 +8,10 @@ base_path = Path(__file__).parent.parent
 
 
 def printlog(msg, indent=0):
-    print(f"{' ' * indent}{msg}")
+    # if msg is not null or empty
+    if msg:
+        # print the message
+        print(f"{' ' * indent}{msg}")
 
 
 def printhdr(msg, indent=0):

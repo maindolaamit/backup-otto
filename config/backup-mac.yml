@@ -35,7 +35,7 @@ mappings:
   - name: onedrive
     target_dir: ~/onedrive/amaindola/mac/
     allow_override: true
-    allow_commit: true   # set to false if you don't want to override existing file in target directory
+    allow_commit: false   # set to false if you don't want to override existing file in target directory
     sources:
       - src_dir: "~"
         copy_files:
