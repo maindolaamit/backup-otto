@@ -1,3 +1,4 @@
+from os import getcwd
 import os
 import shutil
 
@@ -8,7 +9,9 @@ from time import perf_counter
 import py7zr
 
 from src.utils import (
-    printlog,
+    delete_log_file,
+    print_log_file,
+    write_log,
     printhdr,
     get_home_dir,
     get_base_path,
@@ -19,6 +22,14 @@ from src.utils import (
 # List all files int the directory
 home_dir = get_home_dir()
 os_name = "windows" if os.name == "nt" else "mac"
+
+FILE_ALREADY_EXISTS = "Skipping, File already exists"
+FILE_COPIED_SUCCESSFULLY = "File copied successfully"
+FILE_ARCHIVED_SUCCESSFULLY = "File archived successfully"
+FILE_NOT_FOUND = "File not found"
+DIR_COPIED_SUCCESSFULLY = "Directory copied successfully"
+
+LOG_FILE = "output.log"
 
 
 def process_source_files(
@@ -45,13 +56,13 @@ def archive_file_dir(src_file_path, dest_dir):
     if os.path.exists(src_file_path):
         src_arch_file_path = f"{src_file_path}{file_extn}"
         try:
-            printlog(f"Creating archive file {src_arch_file_path}", 2)
+            write_log(f"Creating archive file {src_arch_file_path}", 2)
             # create the archive file
             with py7zr.SevenZipFile(src_arch_file_path, "w") as archive:
                 archive.writeall(src_file_path, os.path.basename(src_file_path))
         except Exception as e:
             msg = f"Exception while creating the archive file : {src_file_path}: {e}"
-            printlog(msg, 1)
+            write_log(msg, 1)
             return
 
         dest_arch_file_path = os.path.join(
@@ -65,17 +76,17 @@ def archive_file_dir(src_file_path, dest_dir):
             ):
                 # remove the archive file from source
                 os.remove(src_arch_file_path)
-                return (f"File already exists, skipping ...",)
+                return (FILE_ALREADY_EXISTS,)
             else:
                 # remove the archive file from destination
-                printlog(f"Removing the existing archive file {dest_arch_file_path}", 2)
+                write_log(f"Removing the existing archive file {dest_arch_file_path}", 2)
                 os.remove(dest_arch_file_path)
 
         # copy the file to destination
         shutil.move(src_arch_file_path, dest_arch_file_path)
-        return f"File archived successfully."
+        return FILE_ARCHIVED_SUCCESSFULLY
     else:
-        return f"File does not exists."
+        return FILE_NOT_FOUND
 
 
 def copy_file_or_dir(src_file_path, file, target_dir, allow_override):
@@ -92,21 +103,21 @@ def copy_file_or_dir(src_file_path, file, target_dir, allow_override):
             if os.path.exists(dest_file_path) and allow_override:
                 shutil.rmtree(dest_file_path)
                 shutil.copytree(src_file_path, target_dir)
-                return f"Directory copied successfully."
+                return DIR_COPIED_SUCCESSFULLY
 
         elif os.path.isfile(src_file_path):
             # check if both files are same
             if os.path.exists(dest_file_path):
                 # if file is same as the source file, then do not copy
                 if os.path.getsize(src_file_path) == os.path.getsize(dest_file_path):
-                    return f"File already exists, skipping ..."
+                    return FILE_ALREADY_EXISTS
                 else:
                     # remove the file from destination
                     os.remove(dest_file_path)
             shutil.copy2(src_file_path, dest_file_path)
-            return "Files copied successfully"
+            return FILE_COPIED_SUCCESSFULLY
     else:
-        return f"File not found."
+        return FILE_NOT_FOUND
 
 
 # Function to copy the file or directory to destination
@@ -131,7 +142,7 @@ def copy_or_archive(base_dir, file, target_dir, mode="copy", allow_override=Fals
         msg = (
             f"Exception while copying the file : {src_file_path} -> {target_dir} : {e}"
         )
-        printlog(msg, 1)
+        write_log(msg, 1)
     t1 = perf_counter()
     time_taken = round(t1 - t0, 4)
     return {"file": file, "mode": mode, "time_taken": time_taken, "message": msg}
@@ -139,16 +150,16 @@ def copy_or_archive(base_dir, file, target_dir, mode="copy", allow_override=Fals
 
 def git_commit(project_dir):
     import datetime
+    import os
 
     now = datetime.datetime.now()
     here = os.getcwd()
     commit_msg = f"backup-otto at {now.strftime('%d-%m-%Y %H:%M:%S')}"
     cmd = f'git commit -am "{commit_msg}"'
-    import os
 
     # goto to the project directory
     os.chdir(project_dir)
-    printlog(cmd)
+    write_log(cmd)
     os.system(cmd)
     # go back to the original directory
     os.chdir(here)
@@ -159,7 +170,7 @@ def start_backup():
     Main method to start the backup
     """
     printhdr("Starting backup")
-    printlog(
+    write_log(
         f"Homedir : {home_dir} ,Current path : {os.path.curdir}, running backup for {os_name}"
     )
     # Check if os specific file exists otherwise take the default file
@@ -196,7 +207,8 @@ def start_backup():
 
                 # Commit the changes to git
                 t0 = perf_counter()
-                git_commit(target_dir)
+                if allow_commit:
+                    git_commit(target_dir)
                 t1 = perf_counter()
 
                 # round the time to 2 decimal places
@@ -216,7 +228,7 @@ def start_backup():
 
         bkp_df = pd.DataFrame(mapping_dicts_list)
         # print the summary in tabular format
-        printlog(bkp_df.to_string(index=False), 1)
+        write_log(bkp_df.to_string(index=False), 1)
         # save the dataframe to csv
         bkp_df.to_csv("backup_summary.csv", index=False)
         process_df.to_csv("process_summary.csv", index=False)
@@ -225,5 +237,8 @@ def start_backup():
 
 
 if __name__ == "__main__":
-    # copy_bash()
+    # delete the existing log file
+    delete_log_file()
     start_backup()
+    print_log_file()
+

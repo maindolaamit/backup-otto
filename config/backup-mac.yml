@@ -31,6 +31,7 @@ mappings:
           - .docker
           - .config
           - .oh-my-zsh
+          - vimwiki
     # Add your custom mappings below
   - name: onedrive
     target_dir: ~/onedrive/amaindola/mac/

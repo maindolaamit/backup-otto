@@ -6,19 +6,48 @@ from pathlib import Path
 
 base_path = Path(__file__).parent.parent
 
+LOG_FILE = os.path.join(base_path, "logs", "output.log")
+
+# method to delete the log file
+def delete_log_file():
+    if os.path.exists(LOG_FILE):
+        os.remove(LOG_FILE)
+
+# print the log file
+def print_log_file():
+    with open(LOG_FILE, 'r') as file:
+        for line in file:
+            print(line, end='')
+
+# method to write message in the log file
+def write_log_file( msg):
+    with open(LOG_FILE, "a") as f:
+        f.write(f"{msg}\n")
+
+
+def write_log(msg, indent=0):
+    # if msg is not null or empty
+    if msg:
+        # printlog(msg, indent)
+        write_log_file(msg)
 
 def printlog(msg, indent=0):
     # if msg is not null or empty
     if msg:
-        # print the message
-        print(f"{' ' * indent}{msg}")
+        print(get_formatted_msg(msg, indent))
 
 
 def printhdr(msg, indent=0):
+    write_log(get_formatted_hdr(msg, indent))
+
+def get_formatted_msg(msg, indent=0):
+    msg = f"{' ' * indent}{msg}"
+    return msg
+
+def get_formatted_hdr(msg, indent=0):
     msg = f" {msg} " if msg else ""
     msg = f"{'=' * 50}{msg}{'=' * 50}"
-    printlog(msg, indent)
-
+    return get_formatted_msg(msg, indent)
 
 def get_home_dir():
     """
