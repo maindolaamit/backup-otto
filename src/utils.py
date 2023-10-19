@@ -36,6 +36,13 @@ def printlog(msg, indent=0):
     if msg:
         print(get_formatted_msg(msg, indent))
 
+# check if the log has any error 
+def has_error():
+    with open(LOG_FILE, 'r') as file:
+        for line in file:
+            if "ERROR" in line:
+                return True
+    return False
 
 def printhdr(msg, indent=0):
     write_log(get_formatted_hdr(msg, indent))
